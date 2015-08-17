@@ -9,7 +9,29 @@ layer.initialize(layerProviderID, layerKeyID, privateKey);
 Parse.Cloud.define("generateToken", function(request, response) {
     var userID = request.params.userID;
     var nonce = request.params.nonce;
+    saveToDatabase(userID);
     if (!userID) throw new Error('Missing userID parameter');
     if (!nonce) throw new Error('Missing nonce parameter');
         response.success(layer.layerIdentityToken(userID, nonce));
 });
+
+
+function saveToDatabase(userID) {
+  var userInformation = { 'id': userID };
+  var userJSON = JSON.stringify(userInformation);
+
+  Parse.Cloud.httpRequest({
+    url: 'https://filip-temp.herokuapp.com/saveUserToDatabase',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: userJSON,
+    success: function (httpResponse) {
+      console.log(httpResponse.text);
+      response.success(httpResponse);
+    },
+    error:function (httpResponse) {
+      console.error('Request failed with response code ' + httpResponse.status);
+      response.error(httpResponse.status);
+    }
+  });
+}
